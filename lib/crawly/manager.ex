@@ -85,32 +85,10 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    case Application.get_env(:crawly, :closespider_itemcount, 1000) do
-      cnt when cnt < items_count ->
-        Logger.info(
-          "Stopping #{inspect(state.name)}, closespider_itemcount achieved"
-        )
+    if delta == 0 do
+      Logger.info("Stopping #{inspect(state.name)}, zero delta achieved")
 
-        Crawly.Engine.stop_spider(state.name)
-
-      _ ->
-        :ignoring
-    end
-
-    # Close spider in case if it's not scraping itms fast enough
-    case Application.get_env(:crawly, :closespider_timeout) do
-      :undefined ->
-        :ignoring
-
-      cnt when cnt > delta ->
-        Logger.info(
-          "Stopping #{inspect(state.name)}, itemcount timeout achieved"
-        )
-
-        Crawly.Engine.stop_spider(state.name)
-
-      _ ->
-        :ignoring
+      Crawly.Engine.stop_spider(state.name)
     end
 
     tref = Process.send_after(self(), :operations, get_timeout())
