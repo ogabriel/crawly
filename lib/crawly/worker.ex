@@ -22,7 +22,7 @@ defmodule Crawly.Worker do
     {:ok, %Crawly.Worker{spider_name: spider_name, backoff: @default_backoff}}
   end
 
-  def handle_info(:work, state) do
+  def handle_info(_, state) do
     %{spider_name: spider_name, backoff: backoff} = state
 
     # Get a request from requests storage.
