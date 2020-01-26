@@ -13,7 +13,7 @@ defmodule Crawly do
              options: []
   def fetch(url, headers \\ [], options \\ []) do
     options =
-      [follow_redirect: false, timeout: 15_000, recv_timeout: 15_000] ++
+      [follow_redirect: false, timeout: 20_000, recv_timeout: 15_000] ++
         options
 
     options =
