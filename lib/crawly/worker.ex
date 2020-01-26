@@ -136,9 +136,7 @@ defmodule Crawly.Worker do
     items = Map.get(parsed_item, :items, [])
 
     # Reading HTTP client options
-    options = [
-      follow_redirect: Application.get_env(:crawly, :follow_redirect, false)
-    ]
+    options = [follow_redirect: false, timeout: 20_000, recv_timeout: 15_000]
 
     options =
       case Application.get_env(:crawly, :proxy, false) do
