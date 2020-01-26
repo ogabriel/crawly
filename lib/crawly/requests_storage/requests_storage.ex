@@ -63,7 +63,7 @@ defmodule Crawly.RequestsStorage do
                | Crawly.Request.t()
                | {:error, :storage_worker_not_running}
   def pop(spider_name) do
-    GenServer.call(__MODULE__, {:pop, spider_name})
+    GenServer.call(__MODULE__, {:pop, spider_name}, 15_000)
   end
 
   @doc """
@@ -75,7 +75,7 @@ defmodule Crawly.RequestsStorage do
                {:stored_requests, non_neg_integer()}
                | {:error, :storage_worker_not_running}
   def stats(spider_name) do
-    GenServer.call(__MODULE__, {:stats, spider_name})
+    GenServer.call(__MODULE__, {:stats, spider_name}, 15_000)
   end
 
   @doc """
@@ -85,7 +85,7 @@ defmodule Crawly.RequestsStorage do
         when spider_name: atom(),
              result: {:ok, pid()} | {:error, :already_started}
   def start_worker(spider_name) do
-    GenServer.call(__MODULE__, {:start_worker, spider_name})
+    GenServer.call(__MODULE__, {:start_worker, spider_name}, 15_000)
   end
 
   def start_link([]) do
