@@ -33,11 +33,10 @@ config :crawly, Crawly.Worker, client: HTTPoison
 
 config :crawly,
   fetcher: {Crawly.Fetchers.HTTPoisonFetcher, []},
-  retry:
-    [
-      retry_codes: [400],
-      max_retries: 3,
-      ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
+  retry: [
+    retry_codes: [400],
+    max_retries: 3,
+    ignored_middlewares: [Crawly.Middlewares.UniqueRequest]
   ],
 
   # User agents which are going to be used with requests
@@ -73,4 +72,4 @@ config :crawly, Crawly.Pipelines.WriteToFile,
   folder: "/tmp",
   extension: "jl"
 
- import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"

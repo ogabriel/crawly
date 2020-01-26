@@ -63,7 +63,6 @@ defmodule DataStorageTest do
     {:stored_items, 0} = Crawly.DataStorage.stats(context.crawler)
   end
 
-
   test "Starting child worker twice", context do
     result = Crawly.DataStorage.start_worker(context.crawler)
     assert result == {:error, :already_started}
@@ -96,7 +95,5 @@ defmodule DataStorageTest do
     :meck.unload(Application)
   end
 
-
-#  test "No data is stored if Dev"
-
+  #  test "No data is stored if Dev"
 end

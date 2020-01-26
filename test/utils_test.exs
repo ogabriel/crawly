@@ -10,17 +10,14 @@ defmodule UtilsTest do
   test "Request from url" do
     requests = Crawly.Utils.request_from_url("https://test.com")
     assert requests == expected_request("https://test.com")
-
   end
 
   test "Requests from urls" do
     requests =
-      Crawly.Utils.requests_from_urls(
-        [
-          "https://test.com",
-          "https://example.com"
-        ]
-      )
+      Crawly.Utils.requests_from_urls([
+        "https://test.com",
+        "https://example.com"
+      ])
 
     assert requests == [
              expected_request("https://test.com"),
@@ -100,7 +97,8 @@ defmodule UtilsTest do
         Crawly.Middlewares.DomainFilter,
         Crawly.Middlewares.UniqueRequest,
         Crawly.Middlewares.RobotsTxt,
-        Crawly.Middlewares.UserAgent],
+        Crawly.Middlewares.UserAgent
+      ],
       retries: 0
     }
   end

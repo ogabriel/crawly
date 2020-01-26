@@ -61,14 +61,19 @@ defmodule ManagerTest do
 
   test "Can't start already started spider" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    assert {:error, :spider_already_started} == Crawly.Engine.start_spider(Manager.TestSpider)
+
+    assert {:error, :spider_already_started} ==
+             Crawly.Engine.start_spider(Manager.TestSpider)
+
     :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
   end
 
-
   test "Can't stop the spider which is not started already started spider" do
     :ok = Crawly.Engine.start_spider(Manager.TestSpider)
-    assert {:error, :spider_already_started} == Crawly.Engine.start_spider(Manager.TestSpider)
+
+    assert {:error, :spider_already_started} ==
+             Crawly.Engine.start_spider(Manager.TestSpider)
+
     :ok = Crawly.Engine.stop_spider(Manager.TestSpider)
   end
 end
@@ -86,12 +91,14 @@ defmodule Manager.TestSpider do
 
   def parse_item(_response) do
     path = Enum.random(1..100)
+
     %{
       :items => [
         %{title: "t_#{path}", url: "example.com", author: "Me", time: "not set"}
       ],
       :requests => [
-        Crawly.Utils.request_from_url("https://www.example.com/#{path}")]
+        Crawly.Utils.request_from_url("https://www.example.com/#{path}")
+      ]
     }
   end
 end
