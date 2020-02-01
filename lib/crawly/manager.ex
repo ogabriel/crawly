@@ -50,8 +50,28 @@ defmodule Crawly.Manager do
 
     Process.link(request_storage_pid)
 
+    options = [follow_redirect: true, timeout: 20_000, recv_timeout: 15_000]
+
+    options =
+      case Application.get_env(:crawly, :proxy, false) do
+        false ->
+          options
+
+        proxy ->
+          options ++ [{:proxy, proxy}]
+      end
+
+    default_middlewares = [
+      Crawly.Middlewares.DomainFilter,
+      Crawly.Middlewares.UniqueRequest,
+      Crawly.Middlewares.RobotsTxt
+    ]
+
     # Store start requests
-    requests = Enum.map(urls, fn url -> Crawly.Request.new(url) end)
+    requests =
+      Enum.map(urls, fn url ->
+        Crawly.Request.new(url, [], options, default_middlewares)
+      end)
 
     :ok = Crawly.RequestsStorage.store(spider_name, requests)
 
