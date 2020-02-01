@@ -19,7 +19,9 @@ defmodule Crawly.Application do
       {DynamicSupervisor,
        strategy: :one_for_one, name: Crawly.DataStorage.WorkersSup},
       {Plug.Cowboy,
-       scheme: :http, plug: Crawly.API.Router, options: [port: 4001]}
+       scheme: :http,
+       plug: Crawly.API.Router,
+       options: [port: Application.get_env(:crawly, :port, 4001)]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
