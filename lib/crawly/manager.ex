@@ -61,16 +61,10 @@ defmodule Crawly.Manager do
           options ++ [{:proxy, proxy}]
       end
 
-    default_middlewares = [
-      Crawly.Middlewares.DomainFilter,
-      Crawly.Middlewares.UniqueRequest,
-      Crawly.Middlewares.RobotsTxt
-    ]
-
     # Store start requests
     requests =
       Enum.map(urls, fn url ->
-        Crawly.Request.new(url, [], options, default_middlewares)
+        Crawly.Request.new(url, [], options, [])
       end)
 
     :ok = Crawly.RequestsStorage.store(spider_name, requests)
