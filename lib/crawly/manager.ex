@@ -100,9 +100,7 @@ defmodule Crawly.Manager do
     Logger.info("Current crawl speed is: #{delta} items/min")
 
     if delta == 0 do
-      Logger.info("Stopping #{inspect(state.name)}, zero delta achieved")
-
-      Crawly.Engine.stop_spider(state.name)
+      Logger.info("should stop #{inspect(state.name)}, zero delta achieved")
     end
 
     tref = Process.send_after(self(), :operations, get_timeout())
