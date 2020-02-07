@@ -3,11 +3,12 @@ defmodule Crawly.ParsedItem do
   Defines the structure of spider's result
   """
 
-  defstruct items: [], requests: []
+  defstruct items: [], requests: [], blocked_requests: []
 
   @type item() :: %{}
   @type t :: %__MODULE__{
           items: [item()],
-          requests: [Crawly.Request.t()]
+          requests: [Crawly.Request.t()],
+          blocked_requests: []
         }
 end
