@@ -35,6 +35,14 @@ defmodule Crawly.RequestsStorage.Worker do
              request: Crawly.Request.t()
   def store(pid, request), do: GenServer.call(pid, {:store, request})
 
+  def block(pid, requests) when is_list(requests) do
+    GenServer.call(pid, {:block, requests})
+  end
+
+  def block(pid, request) do
+    block(pid, [request])
+  end
+
   @doc """
   Pop a request out of requests storage
   """
@@ -78,6 +86,22 @@ defmodule Crawly.RequestsStorage.Worker do
               requests: [new_request | state.requests]
           }
       end
+
+    {:reply, :ok, new_state}
+  end
+
+  def handle_call({:block, requests}, _from, state) do
+    unique_request_seen_requests =
+      requests
+      |> Enum.map(fn url -> {url, true} end)
+      |> Enum.into(%{})
+
+    new_state =
+      Map.put(
+        state,
+        :unique_request_seen_requests,
+        unique_request_seen_requests
+      )
 
     {:reply, :ok, new_state}
   end
