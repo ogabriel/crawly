@@ -92,9 +92,14 @@ defmodule Crawly.RequestsStorage.Worker do
 
   def handle_call({:block, requests}, _from, state) do
     unique_request_seen_requests =
+      Map.get(state, :unique_request_seen_requests, %{})
+
+    blocked_requests =
       requests
       |> Enum.map(fn url -> {url, true} end)
       |> Enum.into(%{})
+
+    unique_request_seen_requests = Map.merge(unique_request_seen_requests, blocked_requests)
 
     new_state =
       Map.put(
