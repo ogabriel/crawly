@@ -35,6 +35,9 @@ defmodule Crawly.RequestsStorage do
   @doc """
   Store requests in related child worker
   """
+
+
+  def store(_, []), do: []
   @spec store(spider_name, requests) :: result
         when spider_name: atom(),
              requests: [Crawly.Request.t()],
@@ -53,6 +56,7 @@ defmodule Crawly.RequestsStorage do
     store(spider_name, [request])
   end
 
+  def block(_, []), do: []
 
   def block(spider_name, requests) when is_list(requests) do
     GenServer.call(__MODULE__, {:block, {spider_name, requests}})
@@ -61,6 +65,7 @@ defmodule Crawly.RequestsStorage do
   def block(spider_name, request) do
     block(spider_name, [request])
   end
+
 
   @doc """
   Pop a request out of requests storage
