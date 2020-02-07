@@ -53,6 +53,15 @@ defmodule Crawly.RequestsStorage do
     store(spider_name, [request])
   end
 
+
+  def block(spider_name, requests) when is_list(requests) do
+    GenServer.call(__MODULE__, {:block, {spider_name, requests}})
+  end
+
+  def block(spider_name, request) do
+    block(spider_name, [request])
+  end
+
   @doc """
   Pop a request out of requests storage
   """
@@ -106,6 +115,21 @@ defmodule Crawly.RequestsStorage do
 
         pid ->
           Crawly.RequestsStorage.Worker.store(pid, requests)
+      end
+
+    {:reply, msg, state}
+  end
+
+  def handle_call({:block, {spider_name, requests}}, _from, state) do
+    %{workers: workers} = state
+
+    msg =
+      case Map.get(workers, spider_name) do
+        nil ->
+          {:error, :storage_worker_not_running}
+
+        pid ->
+          Crawly.RequestsStorage.Worker.block(pid, requests)
       end
 
     {:reply, msg, state}
