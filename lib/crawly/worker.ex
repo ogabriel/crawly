@@ -134,6 +134,7 @@ defmodule Crawly.Worker do
   defp process_parsed_item({parsed_item, response, spider_name}) do
     requests = Map.get(parsed_item, :requests, [])
     items = Map.get(parsed_item, :items, [])
+    blocked_requests = Map.get(parsed_item, :blocked_requests, [])
 
     # Reading HTTP client options
     options = [follow_redirect: true, timeout: 20_000, recv_timeout: 15_000]
@@ -159,6 +160,9 @@ defmodule Crawly.Worker do
         Crawly.RequestsStorage.store(spider_name, request)
       end
     )
+
+    # Send requests to be blocked
+    Crawly.RequestsStorage.block(spider_name, blocked_requests)
 
     # Process all items one by one
     Enum.each(
