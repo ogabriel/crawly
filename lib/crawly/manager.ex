@@ -92,53 +92,7 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    itemcount_limit =
-      :closespider_itemcount
-      |> Utils.get_settings(state.name)
-      |> maybe_convert_to_integer()
-
-    maybe_stop_spider_by_itemcount_limit(
-      state.name,
-      items_count,
-      itemcount_limit
-    )
-
-    # Close spider in case if it's not scraping items fast enough
-    closespider_timeout_limit =
-      :closespider_timeout
-      |> Utils.get_settings(state.name)
-      |> maybe_convert_to_integer()
-
-      maybe_stop_spider_by_timeout(
-        state.name,
-      delta,
-        closespider_timeout_limit
-      )
-
-    tref =
-      Process.send_after(
-        self(),
-        :operations,
-        Utils.get_settings(:manager_operations_timeout, state.name, @timeout)
-      )
-
-    {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
-  end
-
-  defp maybe_stop_spider_by_itemcount_limit(spider_name, current, limit)
-       when current > limit do
-    Logger.info(
-      "Stopping #{inspect(spider_name)}, closespider_itemcount achieved"
-    )
-
-    Crawly.Engine.stop_spider(spider_name, :itemcount_limit)
-  end
-
-  defp maybe_stop_spider_by_itemcount_limit(_, _, _), do: :ok
-
-  defp maybe_stop_spider_by_timeout(spider_name, current, limit)
-       when current < limit do
-    Logger.info("Stopping #{inspect(spider_name)}, itemcount timeout achieved")
+    tref = Process.send_after(self(), :operations, get_timeout())
 
     Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)
   end

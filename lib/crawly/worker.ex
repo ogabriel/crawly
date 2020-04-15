@@ -30,7 +30,7 @@ defmodule Crawly.Worker do
       case Crawly.RequestsStorage.pop(spider_name) do
         nil ->
           # Slow down a bit when there are no new URLs
-          backoff * 2
+          if backoff > 5000000000000, do: backoff, else: backoff * 2
 
         request ->
           # Process the request using following group of functions
@@ -59,6 +59,13 @@ defmodule Crawly.Worker do
     Crawly.Utils.send_after(self(), :work, new_backoff)
 
     {:noreply, %{state | backoff: new_backoff}}
+  end
+
+  # Catch ssl closed error coming from HTTPoison
+  def handle_info({:ssl_closed, _}, %{spider_name: _, backoff: backoff} = state) do
+    Crawly.Utils.send_after(self(), :work, backoff)
+
+    {:noreply, %{state | backoff: backoff}}
   end
 
   @spec get_response({request, spider_name}) :: result
