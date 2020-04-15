@@ -24,7 +24,8 @@ historical archival.
    # mix.exs
    defp deps do
        [
-         {:crawly, "~> 0.8.0"}
+         {:crawly, "~> 0.8.0"},
+         {:floki, "~> 0.26.0"}
        ]
    end
    ```
@@ -34,7 +35,8 @@ historical archival.
    ```elixir
    # lib/crawly_example/esl_spider.ex
    defmodule EslSpider do
-     @behaviour Crawly.Spider
+     use Crawly.Spider
+     
      alias Crawly.Utils
 
      @impl Crawly.Spider
@@ -45,13 +47,14 @@ historical archival.
 
      @impl Crawly.Spider
      def parse_item(response) do
-       hrefs = response.body |> Floki.find("a.more") |> Floki.attribute("href")
+       {:ok, document} = Floki.parse_document(response.body)
+       hrefs = document |> Floki.find("a.more") |> Floki.attribute("href")
 
        requests =
          Utils.build_absolute_urls(hrefs, base_url())
          |> Utils.requests_from_urls()
 
-       title = response.body |> Floki.find("article.blog_post h1") |> Floki.text()
+       title = document |> Floki.find("article.blog_post h1") |> Floki.text()
 
        %{
          :requests => requests,
@@ -68,17 +71,16 @@ historical archival.
    config :crawly,
      closespider_timeout: 10,
      concurrent_requests_per_domain: 8,
-     closespider_itemcount: 1000,
      middlewares: [
        Crawly.Middlewares.DomainFilter,
        Crawly.Middlewares.UniqueRequest,
-       Crawly.Middlewares.UserAgent
+       {Crawly.Middlewares.UserAgent, user_agents: ["Crawly Bot"]}
      ],
      pipelines: [
        {Crawly.Pipelines.Validate, fields: [:url, :title]},
        {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
        Crawly.Pipelines.JSONEncoder,
-       {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "/tmp"} # NEW IN 0.7.0
+       {Crawly.Pipelines.WriteToFile, extension: "csv", folder: "/tmp"}
       ]
    ```
 5. Start the Crawl:
@@ -105,8 +107,8 @@ You can read more here:
 
 1. [x] Pluggable HTTP client
 2. [x] Retries support
-3. [ ] Cookies support
-4. [ ] XPath support
+3. [x] Cookies support
+4. [x] XPath support - can be actually done with meeseeks
 5. [ ] Project generators (spiders)
 6. [ ] UI for jobs management
 
@@ -120,6 +122,7 @@ You can read more here:
 1. Blog crawler: https://github.com/oltarasenko/crawly-spider-example
 2. E-commerce websites: https://github.com/oltarasenko/products-advisor
 3. Car shops: https://github.com/oltarasenko/crawly-cars
+4. JavaScript based website (Splash example): https://github.com/oltarasenko/autosites
 
 ## Contributors
 
