@@ -92,17 +92,13 @@ defmodule Crawly.Manager do
     delta = items_count - state.prev_scraped_cnt
     Logger.info("Current crawl speed is: #{delta} items/min")
 
-    tref = Process.send_after(self(), :operations, get_timeout())
+    tref =
+      Process.send_after(
+        self(),
+        :operations,
+        Utils.get_settings(:manager_operations_timeout, state.name, @timeout)
+      )
 
-    Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)
+    {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
   end
-
-  defp maybe_stop_spider_by_timeout(_, _, _), do: :ok
-
-  defp maybe_convert_to_integer(value) when is_atom(value), do: value
-
-  defp maybe_convert_to_integer(value) when is_binary(value),
-    do: String.to_integer(value)
-
-  defp maybe_convert_to_integer(value) when is_integer(value), do: value
 end
