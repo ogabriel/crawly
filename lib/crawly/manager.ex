@@ -31,6 +31,8 @@ defmodule Crawly.Manager do
 
   use GenServer
 
+  alias Crawly.Utils
+
   def start_link(spider_name) do
     Logger.debug("Starting the manager for #{spider_name}")
     GenServer.start_link(__MODULE__, spider_name)
@@ -57,7 +59,7 @@ defmodule Crawly.Manager do
 
     # Start workers
     num_workers =
-      Application.get_env(:crawly, :concurrent_requests_per_domain, 4)
+      Utils.get_settings(:concurrent_requests_per_domain, spider_name, 4)
 
     worker_pids =
       Enum.map(1..num_workers, fn _x ->
@@ -72,8 +74,13 @@ defmodule Crawly.Manager do
     )
 
     # Schedule basic service operations for given spider manager
-    tref = Process.send_after(self(), :operations, get_timeout())
-    {:ok, %{name: spider_name, tref: tref, prev_scraped_cnt: 0}}
+    timeout =
+      Utils.get_settings(:manager_operations_timeout, spider_name, @timeout)
+
+    tref = Process.send_after(self(), :operations, timeout)
+
+    {:ok,
+     %{name: spider_name, tref: tref, prev_scraped_cnt: 0, workers: worker_pids}}
   end
 
   def handle_info(:operations, state) do
@@ -87,10 +94,15 @@ defmodule Crawly.Manager do
 
     tref = Process.send_after(self(), :operations, get_timeout())
 
-    {:noreply, %{state | tref: tref, prev_scraped_cnt: items_count}}
+    Crawly.Engine.stop_spider(spider_name, :itemcount_timeout)
   end
 
-  defp get_timeout() do
-    Application.get_env(:crawly, :manager_operations_timeout, @timeout)
-  end
+  defp maybe_stop_spider_by_timeout(_, _, _), do: :ok
+
+  defp maybe_convert_to_integer(value) when is_atom(value), do: value
+
+  defp maybe_convert_to_integer(value) when is_binary(value),
+    do: String.to_integer(value)
+
+  defp maybe_convert_to_integer(value) when is_integer(value), do: value
 end

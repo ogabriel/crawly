@@ -114,11 +114,11 @@ Built-in middlewares:
 3. `Crawly.Middlewares.UniqueRequest` - this middleware ensures that crawly would not schedule the same URL(request) multiple times.
 4. `Crawly.Middlewares.UserAgent` - this middleware is used to set a User Agent HTTP header. Allows to rotate UserAgents, if the last one is defined as a list.
 5. `Crawly.Middlewares.RequestOptions` - allows to set additional request options, for example timeout, of proxy string (at this moment the options should match options of the individual fetcher (e.g. HTTPoison))
-   
-   
+6. `Crawly.Middlewares.AutoCookiesManager` - allows to turn on the automatic cookies management. Useful for cases when you need to login or enter form data used by a website.      
    Example:
    ```elixir
-    {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]}
+    {Crawly.Middlewares.RequestOptions, [timeout: 30_000, recv_timeout: 15000]},
+     Crawly.Middlewares.AutoCookiesManager
    ```
 
 ### Item Pipelines
@@ -260,7 +260,7 @@ Use key-based pattern matching when:
 2. you want to bulk process multiple items for efficiency reasons. For example, processing the weather data for 365 days in one pass.
 
 ##### Caveats
-When using the nested-key pattern matching method, the spider's `Crawly.Spider.parse_items/1` callback will need to return items with a single key (or a map with multiple keys, if doing related processing).
+When using the nested-key pattern matching method, the spider's `Crawly.Spider.parse_item/1` callback will need to return items with a single key (or a map with multiple keys, if doing related processing).
 
 When using struct-based pattern matching with existing Ecto structs, you will need to do an intermediate conversion of the struct into a map before performing the insertion into the Ecto Repo. This is due to the underlying Ecto schema metadata still being attached to the struct before insertion.
 
