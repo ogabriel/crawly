@@ -30,7 +30,7 @@ defmodule Crawly.Worker do
       case Crawly.RequestsStorage.pop(spider_name) do
         nil ->
           # Slow down a bit when there are no new URLs
-          if backoff > 5000000000000, do: backoff, else: backoff * 2
+          if backoff > 5_000_000_000_000, do: backoff, else: backoff * 2
 
         request ->
           # Process the request using following group of functions
@@ -42,15 +42,12 @@ defmodule Crawly.Worker do
 
           case :epipe.run(functions, {request, spider_name}) do
             {:error, _step, reason, _step_state} ->
-
-              Logger.debug(
-                fn ->
-                  "Crawly worker could not process the request to #{
-                    inspect(request.url)
-                  }
+              Logger.debug(fn ->
+                "Crawly worker could not process the request to #{
+                  inspect(request.url)
+                }
                   reason: #{inspect(reason)}"
-                end
-              )
+              end)
 
               @default_backoff
 
@@ -65,7 +62,7 @@ defmodule Crawly.Worker do
   end
 
   # Catch ssl closed error coming from HTTPoison
-  def handle_info({:ssl_closed, _}, %{spider_name: _, backoff: backoff} = state) do
+  def handle_info(_, %{spider_name: _, backoff: backoff} = state) do
     Crawly.Utils.send_after(self(), :work, backoff)
 
     {:noreply, %{state | backoff: backoff}}
@@ -80,14 +77,16 @@ defmodule Crawly.Worker do
     # check if spider-level fetcher is set. Overrides the globally configured fetcher.
     # if not set, log warning for explicit config preferred,
     # get the globally-configured fetcher. Defaults to HTTPoisonFetcher
-    {fetcher, options} = Application.get_env(
-      :crawly,
-      :fetcher,
-      {Crawly.Fetchers.HTTPoisonFetcher, []}
-    )
+    {fetcher, options} =
+      Application.get_env(
+        :crawly,
+        :fetcher,
+        {Crawly.Fetchers.HTTPoisonFetcher, []}
+      )
 
     retry_options = Application.get_env(:crawly, :retry, [])
     retry_codes = Keyword.get(retry_options, :retry_codes, [])
+
     case fetcher.fetch(request, options) do
       {:error, _reason} = err ->
         :ok = maybe_retry_request(spider_name, request)
@@ -100,11 +99,11 @@ defmodule Crawly.Worker do
           true ->
             :ok = maybe_retry_request(spider_name, request)
             {:error, :retry}
+
           false ->
             {:ok, {response, spider_name}}
         end
     end
-
   end
 
   @spec parse_item({response, spider_name}) :: result
@@ -148,7 +147,8 @@ defmodule Crawly.Worker do
       fn request ->
         request = Map.put(request, :prev_response, response)
         Crawly.RequestsStorage.store(spider_name, request)
-      end)
+      end
+    )
 
     # Process all items one by one
     Enum.each(
@@ -176,16 +176,16 @@ defmodule Crawly.Worker do
         middlewares = request.middlewares -- ignored_middlewares
 
         request = %Crawly.Request{
-          request |
-          middlewares: middlewares,
-          retries: retries + 1
+          request
+          | middlewares: middlewares,
+            retries: retries + 1
         }
 
         :ok = Crawly.RequestsStorage.store(spider, request)
+
       false ->
         Logger.error("Dropping request to #{request.url}, (max retries)")
         :ok
     end
-
   end
 end
