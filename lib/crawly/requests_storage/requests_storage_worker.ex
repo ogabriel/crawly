@@ -33,14 +33,14 @@ defmodule Crawly.RequestsStorage.Worker do
   @spec store(spider_name, request) :: :ok
         when spider_name: atom(),
              request: Crawly.Request.t()
-  def store(pid, request), do: GenServer.call(pid, {:store, request})
+  def store(pid, request), do: GenServer.call(pid, {:store, request}, 10_000)
 
   @doc """
   Pop a request out of requests storage
   """
   @spec pop(pid()) :: Crawly.Request.t() | nil
   def pop(pid) do
-    GenServer.call(pid, :pop)
+    GenServer.call(pid, :pop, 10_000)
   end
 
   @doc """
@@ -48,7 +48,7 @@ defmodule Crawly.RequestsStorage.Worker do
   """
   @spec stats(pid()) :: {:stored_requests, non_neg_integer()}
   def stats(pid) do
-    GenServer.call(pid, :stats)
+    GenServer.call(pid, :stats, 10_000)
   end
 
   def start_link(spider_name) do
